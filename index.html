@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pre-Mortem Analysis Worksheet | KeepRule Decision Tool</title>
+    <meta name="description" content="Free interactive Pre-Mortem Analysis tool. Imagine your project has failed, identify risks before they happen, and create mitigation plans. A structured decision-making worksheet by KeepRule.">
+    <meta name="keywords" content="pre-mortem analysis, risk assessment, project planning, decision making, risk mitigation, pre-mortem worksheet, failure analysis, KeepRule">
+    <meta name="author" content="KeepRule">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://henu-wang.github.io/pre-mortem-worksheet/">
+    <meta property="og:title" content="Pre-Mortem Analysis Worksheet | KeepRule Decision Tool">
+    <meta property="og:description" content="Identify risks before they happen. An interactive pre-mortem analysis tool that guides you through structured failure prevention.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://henu-wang.github.io/pre-mortem-worksheet/">
+    <meta property="og:site_name" content="KeepRule">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Pre-Mortem Analysis Worksheet | KeepRule Decision Tool">
+    <meta name="twitter:description" content="Identify risks before they happen. An interactive pre-mortem analysis tool for structured failure prevention.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50:'#fef7ee',100:'#fdedd3',200:'#f9d7a5',300:'#f5ba6d',400:'#ef9333',500:'#ec7a12',600:'#dd6008',700:'#b84809',800:'#93390e',900:'#7a310f' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .star-btn { transition: all 0.15s ease; cursor: pointer; }
+        .star-btn:hover, .star-btn.active { color: #ec7a12; transform: scale(1.2); }
+        .star-btn.active { text-shadow: 0 0 8px rgba(236,122,18,0.4); }
+        .step-enter { animation: stepIn 0.4s ease-out; }
+        @keyframes stepIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        .reason-card { animation: cardIn 0.3s ease-out; }
+        @keyframes cardIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
+        .risk-bar { transition: width 0.6s ease-out; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; color: black !important; font-size: 11pt; }
+            .print-break { page-break-before: always; }
+            * { color: #1a1a1a !important; background: transparent !important; box-shadow: none !important; border-color: #ccc !important; }
+            .print-section { border: 1px solid #ddd; padding: 16px; margin-bottom: 16px; border-radius: 8px; }
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+    <header class="no-print border-b border-gray-800/60 bg-gray-950/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+            <a href="https://keeprule.com" target="_blank" rel="noopener" class="flex items-center gap-2 text-sm text-gray-400 hover:text-brand-400 transition-colors">
+                <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <span>A <strong class="text-gray-300">KeepRule</strong> Decision Tool</span>
+            </a>
+            <button onclick="resetAll()" class="text-xs text-gray-500 hover:text-red-400 transition-colors">Reset</button>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div class="text-center mb-10 no-print">
+            <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-brand-400 to-brand-300 bg-clip-text text-transparent mb-3">Pre-Mortem Analysis</h1>
+            <p class="text-gray-400 max-w-xl mx-auto">Imagine your project has already failed. Work backwards to identify and prevent the most critical risks before they happen.</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="no-print mb-10">
+            <div class="flex items-center justify-between mb-2">
+                <span id="progressLabel" class="text-xs font-medium text-gray-400">Step 1 of 6</span>
+                <span id="progressPct" class="text-xs font-medium text-brand-400">17%</span>
+            </div>
+            <div class="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+                <div id="progressBar" class="bg-gradient-to-r from-brand-600 to-brand-400 h-2 rounded-full transition-all duration-500 ease-out" style="width:17%"></div>
+            </div>
+            <div class="flex justify-between mt-2" id="stepDots"></div>
+        </div>
+
+        <!-- Step 1 -->
+        <section id="step1" class="step-panel step-enter">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 md:p-8">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center text-sm font-bold">1</span>
+                    <h2 class="text-xl font-semibold">Describe Your Decision or Project</h2>
+                </div>
+                <p class="text-gray-400 text-sm mb-6 ml-11">What are you planning? Be specific about the scope, timeline, and key objectives.</p>
+                <textarea id="projectDesc" rows="5" placeholder="e.g. We are launching a new SaaS product targeting small businesses in Q3. The team of 5 will build an MVP with user auth, billing, and a dashboard..." class="w-full bg-gray-800/60 border border-gray-700 rounded-xl px-4 py-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 resize-none transition-all"></textarea>
+                <div class="flex justify-end mt-6">
+                    <button onclick="nextStep(2)" class="bg-brand-500 hover:bg-brand-600 text-white font-semibold px-6 py-2.5 rounded-xl transition-colors">Continue &rarr;</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 2 -->
+        <section id="step2" class="step-panel hidden">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 md:p-8 step-enter">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center text-sm font-bold">2</span>
+                    <h2 class="text-xl font-semibold">Imagine Complete Failure</h2>
+                </div>
+                <p class="text-gray-400 text-sm mb-1 ml-11">It is 6 months from now. Your project has <strong class="text-red-400">completely failed</strong>.</p>
+                <p class="text-gray-400 text-sm mb-6 ml-11">List every possible reason why. Think broadly: people, technology, market, timing, resources, competition...</p>
+                <div id="reasonsList" class="space-y-3 mb-4"></div>
+                <div class="flex gap-2">
+                    <input id="newReason" type="text" placeholder="Type a failure reason and press Enter or click +" class="flex-1 bg-gray-800/60 border border-gray-700 rounded-xl px-4 py-2.5 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 transition-all" onkeydown="if(event.key==='Enter')addReason()">
+                    <button onclick="addReason()" class="bg-brand-500 hover:bg-brand-600 text-white font-bold w-11 h-11 rounded-xl transition-colors flex items-center justify-center text-xl shrink-0">+</button>
+                </div>
+                <div class="flex justify-between mt-6">
+                    <button onclick="prevStep(1)" class="text-gray-400 hover:text-gray-200 font-medium px-4 py-2.5 transition-colors">&larr; Back</button>
+                    <button onclick="nextStep(3)" class="bg-brand-500 hover:bg-brand-600 text-white font-semibold px-6 py-2.5 rounded-xl transition-colors">Rate Risks &rarr;</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 3 -->
+        <section id="step3" class="step-panel hidden">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 md:p-8 step-enter">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center text-sm font-bold">3</span>
+                    <h2 class="text-xl font-semibold">Rate Each Risk</h2>
+                </div>
+                <p class="text-gray-400 text-sm mb-6 ml-11">For each failure reason, rate how likely it is to happen and how severe the impact would be.</p>
+                <div id="ratingCards" class="space-y-4"></div>
+                <div class="flex justify-between mt-6">
+                    <button onclick="prevStep(2)" class="text-gray-400 hover:text-gray-200 font-medium px-4 py-2.5 transition-colors">&larr; Back</button>
+                    <button onclick="nextStep(4)" class="bg-brand-500 hover:bg-brand-600 text-white font-semibold px-6 py-2.5 rounded-xl transition-colors">View Rankings &rarr;</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 4 -->
+        <section id="step4" class="step-panel hidden">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 md:p-8 step-enter">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center text-sm font-bold">4</span>
+                    <h2 class="text-xl font-semibold">Risk Ranking</h2>
+                </div>
+                <p class="text-gray-400 text-sm mb-6 ml-11">Risks sorted by score (Likelihood &times; Impact). The top 3 need mitigation plans.</p>
+                <div id="rankingList" class="space-y-3"></div>
+                <div class="flex justify-between mt-6">
+                    <button onclick="prevStep(3)" class="text-gray-400 hover:text-gray-200 font-medium px-4 py-2.5 transition-colors">&larr; Back</button>
+                    <button onclick="nextStep(5)" class="bg-brand-500 hover:bg-brand-600 text-white font-semibold px-6 py-2.5 rounded-xl transition-colors">Mitigate Top Risks &rarr;</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 5 -->
+        <section id="step5" class="step-panel hidden">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 md:p-8 step-enter">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center text-sm font-bold">5</span>
+                    <h2 class="text-xl font-semibold">Mitigation Plans</h2>
+                </div>
+                <p class="text-gray-400 text-sm mb-6 ml-11">For each top risk, describe specific actions you will take to prevent or reduce it.</p>
+                <div id="mitigationCards" class="space-y-5"></div>
+                <div class="flex justify-between mt-6">
+                    <button onclick="prevStep(4)" class="text-gray-400 hover:text-gray-200 font-medium px-4 py-2.5 transition-colors">&larr; Back</button>
+                    <button onclick="nextStep(6)" class="bg-brand-500 hover:bg-brand-600 text-white font-semibold px-6 py-2.5 rounded-xl transition-colors">Generate Report &rarr;</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 6 -->
+        <section id="step6" class="step-panel hidden">
+            <div class="step-enter">
+                <div class="hidden print-only text-center mb-6" style="display:none">
+                    <h1 style="font-size:24pt;font-weight:bold;margin-bottom:4px;">Pre-Mortem Analysis Report</h1>
+                    <p style="font-size:10pt;color:#666;">Generated by KeepRule - keeprule.com</p>
+                </div>
+                <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 md:p-8">
+                    <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-lg bg-green-500/20 text-green-400 flex items-center justify-center text-sm font-bold">&#10003;</span>
+                            <h2 class="text-xl font-semibold">Pre-Mortem Report</h2>
+                        </div>
+                        <button onclick="window.print()" class="no-print bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium px-4 py-2 rounded-xl transition-colors flex items-center gap-2 text-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            Download PDF
+                        </button>
+                    </div>
+                    <div id="reportContent"></div>
+                    <div class="no-print mt-8 p-5 bg-brand-500/10 border border-brand-500/20 rounded-xl text-center">
+                        <p class="text-brand-300 font-medium mb-2">Explore more decision frameworks at KeepRule</p>
+                        <div class="flex flex-wrap justify-center gap-3">
+                            <a href="https://keeprule.com" target="_blank" class="bg-brand-500 hover:bg-brand-600 text-white font-semibold px-5 py-2 rounded-lg transition-colors text-sm">Visit KeepRule</a>
+                            <a href="https://keeprule.com/en/scenarios" target="_blank" class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium px-5 py-2 rounded-lg transition-colors text-sm">Decision Scenarios</a>
+                            <a href="https://keeprule.com/en/principles" target="_blank" class="bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium px-5 py-2 rounded-lg transition-colors text-sm">Principles Library</a>
+                        </div>
+                    </div>
+                    <div class="no-print flex justify-between mt-6">
+                        <button onclick="prevStep(5)" class="text-gray-400 hover:text-gray-200 font-medium px-4 py-2.5 transition-colors">&larr; Back</button>
+                        <button onclick="resetAll()" class="text-red-400 hover:text-red-300 font-medium px-4 py-2.5 transition-colors">Start New Analysis</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="no-print border-t border-gray-800/60 mt-16 py-8">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-2 text-sm text-gray-500">
+                    <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    <span>&copy; 2025 <a href="https://keeprule.com" target="_blank" class="text-gray-400 hover:text-brand-400 transition-colors">KeepRule</a>. Built for better decisions.</span>
+                </div>
+                <nav class="flex gap-5 text-sm">
+                    <a href="https://keeprule.com" target="_blank" class="text-gray-500 hover:text-brand-400 transition-colors">Home</a>
+                    <a href="https://keeprule.com/en/scenarios" target="_blank" class="text-gray-500 hover:text-brand-400 transition-colors">Scenarios</a>
+                    <a href="https://keeprule.com/en/principles" target="_blank" class="text-gray-500 hover:text-brand-400 transition-colors">Principles</a>
+                </nav>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let currentStep = 1;
+        let reasons = [];
+        let mitigations = {};
+
+        function initDots() {
+            const c = document.getElementById('stepDots');
+            c.innerHTML = '';
+            for (let i = 1; i <= 6; i++) {
+                const btn = document.createElement('button');
+                btn.setAttribute('data-step', i);
+                btn.onclick = () => goToStep(i);
+                const span = document.createElement('span');
+                span.className = 'w-6 h-6 rounded-full bg-gray-700 text-gray-400 text-xs flex items-center justify-center font-semibold';
+                span.textContent = i;
+                btn.appendChild(span);
+                c.appendChild(btn);
+            }
+        }
+        initDots();
+
+        function goToStep(step) {
+            if (step < 1 || step > 6) return;
+            if (step >= 2 && !document.getElementById('projectDesc').value.trim()) { shakeEl('step1'); goToStep(1); return; }
+            if (step >= 3 && reasons.length === 0) { shakeEl('step2'); goToStep(2); return; }
+            if (step === 5) saveMitigations();
+            if (step === 3) renderRatingCards();
+            if (step === 4) renderRanking();
+            if (step === 5) renderMitigation();
+            if (step === 6) { saveMitigations(); generateReport(); }
+
+            document.querySelectorAll('.step-panel').forEach(p => p.classList.add('hidden'));
+            const panel = document.getElementById('step' + step);
+            panel.classList.remove('hidden');
+            panel.querySelector('.step-enter, .bg-gray-900')?.classList.remove('step-enter');
+            void panel.offsetWidth;
+            const inner = panel.querySelector('.bg-gray-900') || panel.querySelector('.step-enter');
+            if (inner) inner.classList.add('step-enter');
+
+            currentStep = step;
+            updateProgress();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        function nextStep(s) { goToStep(s); }
+        function prevStep(s) { goToStep(s); }
+
+        function updateProgress() {
+            const pct = Math.round((currentStep / 6) * 100);
+            document.getElementById('progressBar').style.width = pct + '%';
+            document.getElementById('progressPct').textContent = pct + '%';
+            document.getElementById('progressLabel').textContent = 'Step ' + currentStep + ' of 6';
+            document.querySelectorAll('#stepDots button span').forEach((dot, i) => {
+                dot.className = (i + 1 <= currentStep)
+                    ? 'w-6 h-6 rounded-full bg-brand-500 text-white text-xs flex items-center justify-center font-semibold'
+                    : 'w-6 h-6 rounded-full bg-gray-700 text-gray-400 text-xs flex items-center justify-center font-semibold';
+            });
+        }
+
+        function shakeEl(id) {
+            const el = document.getElementById(id);
+            el.style.animation = 'none';
+            void el.offsetHeight;
+            el.style.animation = 'shake 0.4s ease';
+            setTimeout(() => el.style.animation = '', 400);
+        }
+
+        function addReason() {
+            const input = document.getElementById('newReason');
+            const text = input.value.trim();
+            if (!text) return;
+            reasons.push({ id: Date.now(), text: text, likelihood: 0, impact: 0 });
+            input.value = '';
+            renderReasons();
+            input.focus();
+        }
+
+        function removeReason(id) {
+            reasons = reasons.filter(r => r.id !== id);
+            renderReasons();
+        }
+
+        function escHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function renderReasons() {
+            const c = document.getElementById('reasonsList');
+            c.innerHTML = reasons.map((r, i) =>
+                '<div class="reason-card flex items-center gap-3 bg-gray-800/50 border border-gray-700/50 rounded-xl px-4 py-3">' +
+                '<span class="text-brand-400 font-mono text-sm font-bold w-6 text-center">' + (i+1) + '</span>' +
+                '<span class="flex-1 text-gray-200 text-sm">' + escHtml(r.text) + '</span>' +
+                '<button onclick="removeReason(' + r.id + ')" class="text-gray-500 hover:text-red-400 transition-colors text-lg leading-none">&times;</button>' +
+                '</div>'
+            ).join('');
+        }
+
+        function renderRatingCards() {
+            const c = document.getElementById('ratingCards');
+            c.innerHTML = reasons.map((r, i) => {
+                const score = r.likelihood * r.impact;
+                return '<div class="bg-gray-800/50 border border-gray-700/50 rounded-xl p-4">' +
+                    '<p class="text-gray-200 text-sm font-medium mb-3"><span class="text-brand-400 font-mono mr-2">#' + (i+1) + '</span>' + escHtml(r.text) + '</p>' +
+                    '<div class="flex flex-col sm:flex-row gap-4">' +
+                    '<div class="flex-1"><label class="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-1 block">Likelihood</label><div class="flex gap-1">' + starBtns(r.id, 'likelihood', r.likelihood) + '</div></div>' +
+                    '<div class="flex-1"><label class="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-1 block">Impact</label><div class="flex gap-1">' + starBtns(r.id, 'impact', r.impact) + '</div></div>' +
+                    '<div class="flex items-end"><div class="text-center"><label class="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-1 block">Score</label>' +
+                    '<span class="text-xl font-bold ' + scoreColor(score) + '">' + (score || '—') + '</span></div></div>' +
+                    '</div></div>';
+            }).join('');
+        }
+
+        function starBtns(id, type, val) {
+            let h = '';
+            for (let i = 1; i <= 5; i++) {
+                h += '<button onclick="setRating(' + id + ',\'' + type + '\',' + i + ')" class="star-btn text-2xl ' + (i <= val ? 'active text-brand-400' : 'text-gray-600') + '">&#9733;</button>';
+            }
+            return h;
+        }
+
+        function setRating(id, type, val) {
+            const r = reasons.find(x => x.id === id);
+            if (r) { r[type] = val; renderRatingCards(); }
+        }
+
+        function scoreColor(s) {
+            if (s >= 16) return 'text-red-400';
+            if (s >= 9) return 'text-yellow-400';
+            if (s >= 1) return 'text-green-400';
+            return 'text-gray-500';
+        }
+
+        function getSorted() {
+            return [...reasons].sort((a, b) => (b.likelihood * b.impact) - (a.likelihood * a.impact));
+        }
+
+        function renderRanking() {
+            const sorted = getSorted();
+            const c = document.getElementById('rankingList');
+            c.innerHTML = sorted.map((r, i) => {
+                const score = r.likelihood * r.impact;
+                const pct = Math.round((score / 25) * 100);
+                const top = i < 3;
+                return '<div class="bg-gray-800/50 border ' + (top ? 'border-red-500/30 ring-1 ring-red-500/10' : 'border-gray-700/50') + ' rounded-xl p-4">' +
+                    '<div class="flex items-center justify-between mb-2">' +
+                    '<div class="flex items-center gap-2"><span class="w-6 h-6 rounded-full ' + (top ? 'bg-red-500/20 text-red-400' : 'bg-gray-700 text-gray-400') + ' text-xs flex items-center justify-center font-bold">' + (i+1) + '</span>' +
+                    '<span class="text-sm text-gray-200">' + escHtml(r.text) + '</span></div>' +
+                    '<span class="font-bold text-lg ' + scoreColor(score) + '">' + score + '</span></div>' +
+                    '<div class="flex items-center gap-3"><div class="flex-1 bg-gray-700/50 rounded-full h-2.5 overflow-hidden">' +
+                    '<div class="risk-bar h-2.5 rounded-full ' + (score >= 16 ? 'bg-red-500' : score >= 9 ? 'bg-yellow-500' : 'bg-green-500') + '" style="width:' + pct + '%"></div></div>' +
+                    '<span class="text-xs text-gray-500 w-20 text-right">L:' + r.likelihood + ' &times; I:' + r.impact + '</span></div>' +
+                    (top ? '<span class="inline-block mt-2 text-[10px] uppercase tracking-wider font-semibold text-red-400 bg-red-500/10 px-2 py-0.5 rounded">Needs Mitigation</span>' : '') +
+                    '</div>';
+            }).join('');
+        }
+
+        function renderMitigation() {
+            const top3 = getSorted().slice(0, 3);
+            const c = document.getElementById('mitigationCards');
+            c.innerHTML = top3.map((r, i) => {
+                const score = r.likelihood * r.impact;
+                return '<div class="bg-gray-800/50 border border-gray-700/50 rounded-xl p-5">' +
+                    '<div class="flex items-center gap-2 mb-1">' +
+                    '<span class="w-6 h-6 rounded-full bg-red-500/20 text-red-400 text-xs flex items-center justify-center font-bold">' + (i+1) + '</span>' +
+                    '<span class="text-sm font-semibold text-gray-200">' + escHtml(r.text) + '</span>' +
+                    '<span class="ml-auto font-bold ' + scoreColor(score) + '">' + score + '</span></div>' +
+                    '<p class="text-xs text-gray-500 mb-3 ml-8">Likelihood: ' + r.likelihood + '/5 &bull; Impact: ' + r.impact + '/5</p>' +
+                    '<textarea id="mitigation_' + r.id + '" rows="3" placeholder="Describe specific actions to prevent or reduce this risk..." class="w-full bg-gray-900/60 border border-gray-700 rounded-xl px-4 py-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 resize-none text-sm transition-all">' + escHtml(mitigations[r.id] || '') + '</textarea></div>';
+            }).join('');
+        }
+
+        function saveMitigations() {
+            const top3 = getSorted().slice(0, 3);
+            top3.forEach(r => {
+                const el = document.getElementById('mitigation_' + r.id);
+                if (el) mitigations[r.id] = el.value;
+            });
+        }
+
+        function generateReport() {
+            const desc = document.getElementById('projectDesc').value.trim();
+            const sorted = getSorted();
+            const top3 = sorted.slice(0, 3);
+            const date = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+
+            const criticalCount = sorted.filter(r => r.likelihood * r.impact >= 16).length;
+            const moderateCount = sorted.filter(r => { const s = r.likelihood * r.impact; return s >= 9 && s < 16; }).length;
+            const lowCount = sorted.filter(r => { const s = r.likelihood * r.impact; return s >= 1 && s < 9; }).length;
+
+            let rows = sorted.map((r, i) => {
+                const s = r.likelihood * r.impact;
+                return '<tr class="border-b border-gray-800/50 ' + (i < 3 ? 'bg-red-500/5' : '') + '">' +
+                    '<td class="py-2 px-2 text-gray-500">' + (i+1) + '</td>' +
+                    '<td class="py-2 px-2 text-gray-200">' + escHtml(r.text) + '</td>' +
+                    '<td class="py-2 px-2 text-center text-gray-300">' + r.likelihood + '</td>' +
+                    '<td class="py-2 px-2 text-center text-gray-300">' + r.impact + '</td>' +
+                    '<td class="py-2 px-2 text-center font-bold ' + scoreColor(s) + '">' + s + '</td></tr>';
+            }).join('');
+
+            let mits = top3.map((r, i) => {
+                const s = r.likelihood * r.impact;
+                const m = mitigations[r.id] || 'No mitigation plan provided.';
+                return '<div class="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4">' +
+                    '<div class="flex items-center gap-2 mb-2">' +
+                    '<span class="w-5 h-5 rounded-full bg-red-500/20 text-red-400 text-[10px] flex items-center justify-center font-bold">' + (i+1) + '</span>' +
+                    '<span class="text-sm font-semibold text-gray-200">' + escHtml(r.text) + '</span>' +
+                    '<span class="ml-auto text-xs ' + scoreColor(s) + ' font-bold">Score: ' + s + '</span></div>' +
+                    '<p class="text-sm text-gray-300 bg-gray-900/40 rounded-lg p-3 ml-7">' + escHtml(m) + '</p></div>';
+            }).join('');
+
+            document.getElementById('reportContent').innerHTML =
+                '<div class="print-section mb-6"><div class="flex items-center justify-between mb-3">' +
+                '<h3 class="text-sm font-semibold uppercase tracking-wider text-gray-400">Project / Decision</h3>' +
+                '<span class="text-xs text-gray-500">' + date + '</span></div>' +
+                '<p class="text-gray-200 bg-gray-800/40 rounded-lg p-4 text-sm leading-relaxed">' + escHtml(desc) + '</p></div>' +
+
+                '<div class="print-section mb-6"><h3 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">All Identified Risks (' + sorted.length + ')</h3>' +
+                '<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="border-b border-gray-700">' +
+                '<th class="text-left py-2 px-2 text-gray-400 font-medium">#</th>' +
+                '<th class="text-left py-2 px-2 text-gray-400 font-medium">Risk</th>' +
+                '<th class="text-center py-2 px-2 text-gray-400 font-medium">L</th>' +
+                '<th class="text-center py-2 px-2 text-gray-400 font-medium">I</th>' +
+                '<th class="text-center py-2 px-2 text-gray-400 font-medium">Score</th>' +
+                '</tr></thead><tbody>' + rows + '</tbody></table></div></div>' +
+
+                '<div class="print-section mb-6"><h3 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">Mitigation Plans (Top 3 Risks)</h3>' +
+                '<div class="space-y-4">' + mits + '</div></div>' +
+
+                '<div class="print-section"><h3 class="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">Risk Summary</h3>' +
+                '<div class="grid grid-cols-3 gap-4 text-center">' +
+                '<div class="bg-red-500/10 border border-red-500/20 rounded-lg p-3"><div class="text-2xl font-bold text-red-400">' + criticalCount + '</div><div class="text-xs text-gray-400 mt-1">Critical (16-25)</div></div>' +
+                '<div class="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3"><div class="text-2xl font-bold text-yellow-400">' + moderateCount + '</div><div class="text-xs text-gray-400 mt-1">Moderate (9-15)</div></div>' +
+                '<div class="bg-green-500/10 border border-green-500/20 rounded-lg p-3"><div class="text-2xl font-bold text-green-400">' + lowCount + '</div><div class="text-xs text-gray-400 mt-1">Low (1-8)</div></div>' +
+                '</div></div>';
+        }
+
+        function resetAll() {
+            if (currentStep > 1 && !confirm('Are you sure? This will clear all your data.')) return;
+            document.getElementById('projectDesc').value = '';
+            reasons = [];
+            mitigations = {};
+            renderReasons();
+            goToStep(1);
+        }
+
+        updateProgress();
+    </script>
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Pre-Mortem Analysis Worksheet",
+        "description": "Interactive Pre-Mortem Analysis tool for identifying and mitigating project risks before they happen.",
+        "url": "https://henu-wang.github.io/pre-mortem-worksheet/",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "author": { "@type": "Organization", "name": "KeepRule", "url": "https://keeprule.com" }
+    }
+    </script>
+</body>
+</html>
